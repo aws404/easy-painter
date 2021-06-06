@@ -2,6 +2,7 @@ package io.github.aws404.easypainter.custom;
 
 import io.github.aws404.easypainter.mixin.IdCountsStateAccessor;
 import io.github.aws404.easypainter.mixin.MapStateAccessor;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.block.MapColor;
 import net.minecraft.item.map.MapState;
 import net.minecraft.server.world.ServerWorld;
@@ -57,7 +58,13 @@ public class ImageRenderer {
     }
 
     private static int getNextPaintingId(ServerWorld world) {
-        return ((IdCountsStateAccessor) world.getPersistentStateManager().getOrCreate(IdCountsState::fromNbt, IdCountsState::new, "idcounts")).invokeGetNextPaintingCount();
+        IdCountsState idCounts = world.getPersistentStateManager().getOrCreate(IdCountsState::fromNbt, IdCountsState::new, "idcounts");
+        Object2IntMap<String> counts = ((IdCountsStateAccessor) idCounts).getIdCounts();
+
+        int i = counts.getInt("painting") + 1;
+        counts.put("painting", i);
+        idCounts.markDirty();
+        return i;
     }
 
     private static int nearestColor(MapColor[] colors, Color imageColor) {

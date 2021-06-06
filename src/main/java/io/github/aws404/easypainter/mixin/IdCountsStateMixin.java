@@ -19,15 +19,4 @@ public abstract class IdCountsStateMixin extends PersistentState {
     private void init(CallbackInfo ci) {
         idCounts.put("painting", 10000);
     }
-
-    /**
-     * Returns the next map id to use for paintings
-     * @return the next painting map id
-     */
-    private int getNextPaintingCount() {
-        int i = this.idCounts.getInt("painting") + 1;
-        this.idCounts.put("painting", i);
-        this.markDirty();
-        return i;
-    }
 }
