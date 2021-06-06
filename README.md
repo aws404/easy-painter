@@ -1,9 +1,21 @@
-# Fabric Example Mod
+# Easy Painter
 
-## Setup
+**Easy painter** is a server-side mod for improving paintings!
 
-For setup instructions please see the [fabric wiki page](https://fabricmc.net/wiki/tutorial:setup) that relates to the IDE that you are using.
+## Features
+* The easy painting selection GUI opens when you place/shift click a painting, showing you all the paintings that could go in that position.
+* Add custom paintings to your server, no resource packs required. Just place the image and a small JSON file in the config directory ([see here](#Custom Paintings))
 
-## License
-
-This template is available under the CC0 license. Feel free to learn from it and incorporate it in your own projects.
+## Custom Paintings
+Custom paintings require 2 files to be placed in the `config/easy_painter` dirrecory (see the [example here](/example/config)).
+1. The JSON file. This simply tells the mod how big the painting should be. For Example:
+```json
+{
+  "blockWidth": 2,
+  "blockHeight": 2,
+  "image": "tater" <- (optional, will assume the same as the file name if not supplied)
+}
+```
+2. The image file. This is the `png` image that the painting should display, it can be either named the same as the JSON file or defined in the `image` field.  
+The dimensions of the image need to be in the same ratio as `blockWidth` to `blockHeight` (Note: this is not a technical limitation but rather imposed as stretching images to fit dimensions looks terrible).  
+   

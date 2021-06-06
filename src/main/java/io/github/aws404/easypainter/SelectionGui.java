@@ -6,23 +6,28 @@ import io.github.aws404.easypainter.mixin.AbstractDecorationEntityAccessor;
 import net.minecraft.entity.decoration.painting.PaintingEntity;
 import net.minecraft.entity.decoration.painting.PaintingMotive;
 import net.minecraft.item.Items;
+import net.minecraft.network.Packet;
 import net.minecraft.network.packet.s2c.play.EntityDestroyS2CPacket;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.registry.Registry;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class SelectionGui extends SimpleGui {
 
-    public SelectionGui(PaintingEntity current, ServerPlayerEntity player) {
-        super(ScreenHandlerType.GENERIC_9X3, player, false);
+    private final PaintingEntity entity;
 
-        List<PaintingMotive> motives = Registry.PAINTING_MOTIVE.stream().filter(motive -> EasyPainter.canPaintingAttach(current, motive)).collect(Collectors.toList());
+    private SelectionGui(PaintingEntity entity, List<PaintingMotive> motives, ServerPlayerEntity player) {
+        super(getHandlerFromItems(motives.size()), player, false); //TODO: Make this screen handle sizes better
+        this.entity = entity;
+        this.setTitle(new TranslatableText("screen.easy_painter.title"));
 
         for (PaintingMotive possibility : motives) {
             GuiElementBuilder builder = new GuiElementBuilder(Items.PAINTING)
@@ -30,23 +35,17 @@ public class SelectionGui extends SimpleGui {
                             .formatted(Formatting.YELLOW)
                     )
                     .addLoreLine(new LiteralText("")
-                            .append(new LiteralText("- ")
-                                    .formatted(Formatting.GOLD)
-                            )
-                            .append(new LiteralText("Size: ")
-                                    .formatted(Formatting.YELLOW)
-                            )
-                            .append(new LiteralText((possibility.getHeight() / 16) + "x" + (possibility.getWidth() / 16))
-                                    .formatted(Formatting.WHITE)
-                            )
-
+                            .append(new TranslatableText("screen.easy_painter.bullet").formatted(Formatting.GOLD))
+                            .append(new TranslatableText("screen.easy_painter.size",
+                                    new TranslatableText("screen.easy_painter.size.data", possibility.getHeight() / 16, possibility.getWidth() / 16).formatted(Formatting.WHITE)
+                            ).formatted(Formatting.YELLOW))
                     )
                     .setCallback((index, type1, action) -> {
                         this.close();
-                        this.changePainting(current, possibility);
+                        this.changePainting(possibility);
                     });
 
-            if (possibility == current.motive) {
+            if (possibility == entity.motive) {
                 builder.addLoreLine(new LiteralText(""));
                 builder.addLoreLine(new LiteralText("Currently Selected").formatted(Formatting.GRAY));
                 builder.glow();
@@ -56,11 +55,36 @@ public class SelectionGui extends SimpleGui {
         }
     }
 
-    private void changePainting(PaintingEntity entity, PaintingMotive motive) {
-        entity.motive = motive;
-        ((AbstractDecorationEntityAccessor) entity).callUpdateAttachmentPosition();
-        entity.getServer().getPlayerManager().sendToAll(new EntityDestroyS2CPacket(entity.getId()));
-        entity.getServer().getPlayerManager().sendToAll(entity.createSpawnPacket());
+    private void changePainting(PaintingMotive motive) {
+        this.entity.motive = motive;
+        ((AbstractDecorationEntityAccessor) this.entity).callUpdateAttachmentPosition();
+        this.entity.getServer().getPlayerManager().sendToAll(new EntityDestroyS2CPacket(this.entity.getId()));
+        Packet<?> packet = this.entity.createSpawnPacket();
+        if (packet != null) {
+            this.entity.getServer().getPlayerManager().sendToAll(packet);
+        }
+    }
+
+    public static SelectionGui createGui(PaintingEntity entity, ServerPlayerEntity player) {
+        List<PaintingMotive> motives = Registry.PAINTING_MOTIVE.stream().filter(motive -> EasyPainter.canPaintingAttach(entity, motive)).sorted(Comparator.comparingInt(o -> o.getHeight() * o.getWidth())).collect(Collectors.toList());
+        return new SelectionGui(entity, motives, player);
+    }
+
+    private static ScreenHandlerType<?> getHandlerFromItems(int count) {
+        switch ((int) Math.ceil(count / 9.0)) {
+            case 1:
+                return ScreenHandlerType.GENERIC_9X1;
+            case 2:
+                return ScreenHandlerType.GENERIC_9X2;
+            case 3:
+                return ScreenHandlerType.GENERIC_9X3;
+            case 4:
+                return ScreenHandlerType.GENERIC_9X4;
+            case 5:
+                return ScreenHandlerType.GENERIC_9X5;
+            default:
+                return ScreenHandlerType.GENERIC_9X6;
+        }
     }
 
 }

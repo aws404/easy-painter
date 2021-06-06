@@ -1,10 +1,18 @@
 package io.github.aws404.easypainter;
 
+import io.github.aws404.easypainter.custom.ClearCacheCommand;
+import io.github.aws404.easypainter.custom.CustomFrameEntity;
+import io.github.aws404.easypainter.custom.CustomMotivesLoader;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.fabricmc.fabric.api.tag.TagRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.decoration.painting.PaintingEntity;
 import net.minecraft.entity.decoration.painting.PaintingMotive;
 import net.minecraft.tag.Tag;
@@ -13,6 +21,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -22,15 +31,25 @@ public class EasyPainter implements ModInitializer {
 
 	public static Tag<Block> PAINTING_IGNORED = TagRegistry.block(new Identifier("easy_painter:painting_ignored"));
 	public static Tag<Block> CANNOT_SUPPORT_PAINTING = TagRegistry.block(new Identifier("easy_painter:cannot_support_painting"));
-
 	public static Tag<EntityType<?>> PAINTING_INTERACT = TagRegistry.entityType(new Identifier("easy_painter:painting_interact"));
+	public static EntityType<CustomFrameEntity> CUSTOM_FRAME_ENTITY = registerEntity("frame_entity", CustomFrameEntity::new);
 
     @Override
     public void onInitialize() {
-        LOGGER.info("Starting Easy Painter!");
-        LOGGER.info("{} painting motives loaded.", Registry.PAINTING_MOTIVE.getIds().size());
+        ServerWorldEvents.LOAD.register((server, world) -> {
+            if (world.getRegistryKey() == World.OVERWORLD) {
+                CustomMotivesLoader.init(world);
+            }
+        });
+        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> ClearCacheCommand.register(dispatcher));
     }
 
+    /**
+     * Tests if the painting could fit the supplied motive
+     * @param entity the painting entity
+     * @param motive the motive to test
+     * @return <code>true</code> if the motive will fit
+     */
     public static boolean canPaintingAttach(PaintingEntity entity, PaintingMotive motive) {
         Direction facing = entity.getHorizontalFacing();
         Direction rotated = entity.getHorizontalFacing().rotateYCounterclockwise();
@@ -81,6 +100,14 @@ public class EasyPainter implements ModInitializer {
 
     private static double getOffset(int i) {
         return i % 32 == 0 ? 0.5D : 0.0D;
+    }
+
+    private static <T extends Entity> EntityType<T> registerEntity(String id, EntityType.EntityFactory<T> factory) {
+        return Registry.register(
+                Registry.ENTITY_TYPE,
+                "easy_painter:" + id,
+                FabricEntityTypeBuilder.create(SpawnGroup.MISC, factory).disableSaving().disableSummon().build()
+        );
     }
 
 }

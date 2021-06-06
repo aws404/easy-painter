@@ -6,6 +6,9 @@
   "mixins": [
     "AbstractDecorationEntityAccessor",
     "DecorationItemMixin",
+    "IdCountsStateAccessor",
+    "IdCountsStateMixin",
+    "MapStateAccessor",
     "PaintingEntityMixin"
   ],
   "injectors": {
