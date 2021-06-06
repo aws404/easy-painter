@@ -9,11 +9,11 @@
 ## Custom Paintings
 Custom paintings require 2 files to be placed in the `config/easy_painter` dirrecory (see the [example here](/example/config)).
 1. The JSON file. This simply tells the mod how big the painting should be. For Example:
-```json
+```json5
 {
   "blockWidth": 2,
   "blockHeight": 2,
-  "image": "tater" <- (optional, will assume the same as the file name if not supplied)
+  "image": "tater" //<- (optional, will assume the same as the file name if not supplied)
 }
 ```
 2. The image file. This is the `png` image that the painting should display, it can be either named the same as the JSON file or defined in the `image` field.  
