@@ -1,0 +1,6 @@
+{
+  "blockWidth": 2,
+  "blockHeight": 2,
+  "image": "tater_image",
+  "ditherMode": "FLOYD"
+}

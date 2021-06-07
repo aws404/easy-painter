@@ -3,24 +3,16 @@
 **Easy painter** is a server-side mod for improving paintings!
 
 ## Features
-* The easy painting selection GUI opens when you place/shift click a painting, showing you all the paintings that could go in that position.
-* Add custom paintings to your server, no resource packs required. Just place the image and a small JSON file in the config directory ([see here](#Custom Paintings))
+* Easy painting selection GUI opens when you place/shift click a painting, showing you all the paintings that could go in that position.
+* Add custom paintings to your server, no resource packs required. Just place create a simple datapack, [see here](/example).
+* Painting locking, add the `locked:true` tag to a painting entity to lock it. This will make it unbreakable, unchangeable, ect.
+* Painting block/entity tags, customise the blocks which can support paintings/sit informant of paintings without breaking them.
+    * `easy_painter/tags/blocks/cannot_support_paiting.json` - Blocks which cannot be behind paintings without them breaking
+    * `easy_painter/tags/blocks/paiting_ignored.json` - Blocks which can sit in-front of paintings without them breaking
+    * `easy_painter/tags/entity_types/painting_interact.json` - Entities which cannot share a space with paintings
 
-## Custom Paintings
-Custom paintings require 2 files to be placed in the `config/easy_painter` dirrecory (see the [example here](/example/config)).
-1. The JSON file. This simply tells the mod how big the painting should be. For Example:
-```json5
-{
-  "blockWidth": 2,
-  "blockHeight": 2,
-  "image": "tater" //<- (optional, will assume the same as the file name if not supplied)
-}
-```
-2. The image file. This is the `png` image that the painting should display, it can be either named the same as the JSON file or defined in the `image` field.  
-The dimensions of the image need to be in the same ratio as `blockWidth` to `blockHeight` (Note: this is not a technical limitation but rather imposed as stretching images to fit dimensions looks terrible).  
-   
-### Removing Custom Paintings
-To properly remove a custom painting follow the steps bellow:
-1. From the console or as an op run `/easy_painter clear <painting_name>`
-2. Run the command again to confirm.
-3. Once the server has stopped, delete the relevant files from `config/easy_painter`
+## Libraries Used
+* [Image2Map](https://github.com/TheEssem/Image2Map) - TheEssem
+* [sgui](https://github.com/Patbox/sgui) - Patbox
+* [Server Translations](https://github.com/arthurbambou/Server-Translations) - Arthurbambou
+* [FabricAPI](https://github.com/FabricMC/fabric) - FabricMC
