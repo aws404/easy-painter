@@ -15,9 +15,11 @@ import net.minecraft.world.PersistentStateManager;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MotiveCacheState extends PersistentState {
@@ -35,7 +37,8 @@ public class MotiveCacheState extends PersistentState {
     public NbtCompound writeNbt(NbtCompound nbt) {
         nbt.putInt("currentMapId", currentMapId.get());
         for (Entry entry : entries.values()) {
-           nbt.put(entry.id.toString(), entry.writeNbt(new NbtCompound()));
+            if (entry != null)
+                nbt.put(entry.id.toString(), entry.writeNbt(new NbtCompound()));
         }
         return nbt;
     }
@@ -44,13 +47,41 @@ public class MotiveCacheState extends PersistentState {
         return currentMapId.getAndAdd(1);
     }
 
+    public Set<Identifier> getKeys() {
+        return this.entries.keySet();
+    }
+
     public Entry getEntry(Identifier id) {
         return this.entries.get(id);
     }
 
-    public void removeEntry(Identifier id) {
+    /**
+     * Server must be stopped for this or it will crash
+     */
+    public void removeEntry(PersistentStateManager stateManager, Identifier id) {
+        for (int[] mapId : entries.get(id).mapIds) {
+            for (int i : mapId) {
+                stateManager.set("map_" + i, new PersistentState() {
+
+                    {
+                        this.markDirty();
+                    }
+
+                    @Override
+                    public NbtCompound writeNbt(NbtCompound nbt) {
+                        return null;
+                    }
+
+                    @Override
+                    public void save(File file) {
+                        file.delete();
+                    }
+                });
+            }
+        }
+
+        this.entries.put(id, null);
         this.markDirty();
-        this.entries.remove(id);
     }
 
     public Entry getOrCreateEntry(Identifier resource, Gson gson, ResourceManager manager, PersistentStateManager stateManager) {
@@ -67,7 +98,8 @@ public class MotiveCacheState extends PersistentState {
 
             int blockWidth = data.get("blockWidth").getAsInt();
             int blockHeight = data.get("blockHeight").getAsInt();
-            String imageName = data.has("image") ? "paintings/" + data.get("image").getAsString() + ".png" : resource.getPath().substring(0, resource.getPath().indexOf(".json")) + "_image.png";
+            String imageName = data.has("image") ? "painting/" + data.get("image").getAsString() + ".png" : resource.getPath().substring(0, resource.getPath().indexOf(".json")) + "_image.png";
+            ImageRenderer.DitherMode ditherMode = data.has("ditherMode") ? ImageRenderer.DitherMode.fromString(data.get("ditherMode").getAsString()) : ImageRenderer.DitherMode.NONE;
 
             BufferedImage image = ImageIO.read(manager.getResource(new Identifier(resource.getNamespace(), imageName)).getInputStream());
 
@@ -82,7 +114,7 @@ public class MotiveCacheState extends PersistentState {
                 for (int bH = 0; bH < blockHeight; bH++) {
                     BufferedImage outputImage = new BufferedImage(128, 128, BufferedImage.TYPE_INT_RGB);
                     outputImage.getGraphics().drawImage(resultingImage, 0, 0, 128, 128, bW * 128, bH * 128, (bW + 1) * 128, (bH + 1) * 128, null);
-                    mapIds[bW][bH] = ImageRenderer.renderImageToMap(outputImage, stateManager);
+                    mapIds[bW][bH] = ImageRenderer.renderImageToMap(outputImage, ditherMode, stateManager);
                 }
             }
 

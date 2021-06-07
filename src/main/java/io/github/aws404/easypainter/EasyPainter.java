@@ -1,9 +1,11 @@
 package io.github.aws404.easypainter;
 
 import fr.catcore.server.translations.api.ServerTranslations;
+import io.github.aws404.easypainter.command.EasyPainterCommand;
 import io.github.aws404.easypainter.custom.CustomFrameEntity;
 import io.github.aws404.easypainter.custom.CustomMotivesManager;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
@@ -47,6 +49,8 @@ public class EasyPainter implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> EasyPainterCommand.register(dispatcher));
+
         ServerWorldEvents.LOAD.register((server, world) -> {
             if (world.getRegistryKey() == World.OVERWORLD) {
                 EasyPainter.customMotivesManager = new CustomMotivesManager(world.getPersistentStateManager());

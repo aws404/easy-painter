@@ -9,5 +9,5 @@
 	"screen.easy_painter.size.data": "%sx%s",
 	"screen.easy_painter.currently_selected": "Currently Selected",
 
-	"commands.easy_painter.clear.confirmation_required": "Are you sure you want to clear the painting cache? This will stop the server so the painting cache can be cleared. To confirm, run the command again."
+	"command.easy_painter.clearcache.not_prepared": "Are you sure you want to clear the painting cache? This will stop the server so the painting cache can be cleared. To confirm, run the command again."
 }

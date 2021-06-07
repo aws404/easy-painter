@@ -3,6 +3,7 @@ package io.github.aws404.easypainter.custom;
 import io.github.aws404.easypainter.mixin.MapStateAccessor;
 import net.minecraft.block.MapColor;
 import net.minecraft.item.map.MapState;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.World;
 
@@ -20,7 +21,7 @@ import java.util.Objects;
 public class ImageRenderer {
     private static final double[] shadeCoeffs = {0.71, 0.86, 1.0, 0.53};
 
-    public static int renderImageToMap(BufferedImage image, PersistentStateManager stateManager) {
+    public static int renderImageToMap(BufferedImage image, DitherMode mode, PersistentStateManager stateManager) {
         MapState state = MapStateAccessor.createMapState(0, 0, (byte) 3, false, false, true, World.OVERWORLD);
 
         Image resizedImage = image.getScaledInstance(128, 128, Image.SCALE_DEFAULT);
@@ -35,6 +36,10 @@ public class ImageRenderer {
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 imageColor = new Color(pixels[j][i], true);
+                if (mode.equals(DitherMode.FLOYD))
+                    state.colors[i + j * width] = (byte) floydDither(mapColors, pixels, i, j, imageColor);
+                else
+                    state.colors[i + j * width] = (byte) nearestColor(mapColors, imageColor);
                 state.colors[i + j * width] = (byte) nearestColor(mapColors, imageColor);
             }
         }
@@ -56,6 +61,63 @@ public class ImageRenderer {
 
     private static int getNextPaintingId(PersistentStateManager stateManager) {
         return MotiveCacheState.getOrCreate(stateManager).getNextMapId();
+    }
+    private static Color mapColorToRGBColor(MapColor[] colors, int color) {
+        Color mcColor = new Color(colors[color >> 2].color);
+        double[] mcColorVec = {
+                (double) mcColor.getRed(),
+                (double) mcColor.getGreen(),
+                (double) mcColor.getBlue()
+        };
+        double coeff = shadeCoeffs[color & 3];
+        return new Color((int)(mcColorVec[0] * coeff), (int)(mcColorVec[1] * coeff), (int)(mcColorVec[2] * coeff));
+    }
+
+    private static class NegatableColor {
+        public final int r;
+        public final int g;
+        public final int b;
+        public NegatableColor(int r, int g, int b) {
+            this.r = r;
+            this.g = g;
+            this.b = b;
+        }
+    }
+    private static int floydDither(MapColor[] mapColors, int[][] pixels, int x, int y, Color imageColor) {
+        // double[] imageVec = { (double) imageColor.getRed() / 255.0, (double) imageColor.getGreen() / 255.0,
+        //         (double) imageColor.getBlue() / 255.0 };
+        int colorIndex = nearestColor(mapColors, imageColor);
+        Color palletedColor = mapColorToRGBColor(mapColors, colorIndex);
+        NegatableColor error = new NegatableColor(
+                imageColor.getRed() - palletedColor.getRed(),
+                imageColor.getGreen() - palletedColor.getGreen(),
+                imageColor.getBlue() - palletedColor.getBlue());
+        if (pixels[0].length > x + 1) {
+            Color pixelColor = new Color(pixels[y][x + 1], true);
+            pixels[y][x + 1] = applyError(pixelColor, error, 7.0 / 16.0);
+        }
+        if (pixels.length > y + 1) {
+            if (x > 0) {
+                Color pixelColor = new Color(pixels[y + 1][x - 1], true);
+                pixels[y + 1][x - 1] = applyError(pixelColor, error, 3.0 / 16.0);
+            }
+            Color pixelColor = new Color(pixels[y + 1][x], true);
+            pixels[y + 1][x] = applyError(pixelColor, error, 5.0 / 16.0);
+            if (pixels[0].length > x + 1) {
+                pixelColor = new Color(pixels[y + 1][x + 1], true);
+                pixels[y + 1][x + 1] = applyError(pixelColor, error, 1.0 / 16.0);
+            }
+        }
+
+
+        return colorIndex;
+    }
+
+    private static int applyError(Color pixelColor, NegatableColor error, double quantConst) {
+        int pR = MathHelper.clamp(pixelColor.getRed() + (int)((double)error.r * quantConst), 0, 255);
+        int pG = MathHelper.clamp(pixelColor.getGreen() + (int)((double)error.g * quantConst), 0, 255);
+        int pB = MathHelper.clamp(pixelColor.getBlue() + (int)((double)error.b * quantConst), 0, 255);
+        return new Color(pR, pG, pB, pixelColor.getAlpha()).getRGB();
     }
 
     private static int nearestColor(MapColor[] colors, Color imageColor) {
@@ -83,6 +145,7 @@ public class ImageRenderer {
     }
 
     private static int[][] convertPixelArray(BufferedImage image) {
+
         final byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
         final int width = image.getWidth();
         final int height = image.getHeight();
@@ -113,5 +176,18 @@ public class ImageRenderer {
         g.drawImage(image, 0, 0, null);
         g.dispose();
         return newImage;
+    }
+
+    public enum DitherMode {
+        NONE,
+        FLOYD;
+
+        public static DitherMode fromString(String string) {
+            if (string.equalsIgnoreCase("NONE"))
+                return DitherMode.NONE;
+            else if (string.equalsIgnoreCase("DITHER") || string.equalsIgnoreCase("FLOYD"))
+                return DitherMode.FLOYD;
+            throw new IllegalArgumentException("invalid dither mode");
+        }
     }
 }
