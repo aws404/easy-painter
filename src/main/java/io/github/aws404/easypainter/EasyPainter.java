@@ -1,11 +1,11 @@
 package io.github.aws404.easypainter;
 
-import io.github.aws404.easypainter.custom.ClearCacheCommand;
+import fr.catcore.server.translations.api.ServerTranslations;
 import io.github.aws404.easypainter.custom.CustomFrameEntity;
-import io.github.aws404.easypainter.custom.CustomMotivesLoader;
+import io.github.aws404.easypainter.custom.CustomMotivesManager;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.fabricmc.fabric.api.tag.TagRegistry;
 import net.minecraft.block.Block;
@@ -15,33 +15,44 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.decoration.painting.PaintingEntity;
 import net.minecraft.entity.decoration.painting.PaintingMotive;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.Items;
 import net.minecraft.tag.Tag;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class EasyPainter implements ModInitializer {
 
-    public static Logger LOGGER = LogManager.getLogger();
+    public static final Logger LOGGER = LogManager.getLogger();
 
-	public static Tag<Block> PAINTING_IGNORED = TagRegistry.block(new Identifier("easy_painter:painting_ignored"));
-	public static Tag<Block> CANNOT_SUPPORT_PAINTING = TagRegistry.block(new Identifier("easy_painter:cannot_support_painting"));
-	public static Tag<EntityType<?>> PAINTING_INTERACT = TagRegistry.entityType(new Identifier("easy_painter:painting_interact"));
-	public static EntityType<CustomFrameEntity> CUSTOM_FRAME_ENTITY = registerEntity("frame_entity", CustomFrameEntity::new);
+	public static final Tag<Block> PAINTING_IGNORED = TagRegistry.block(new Identifier("easy_painter:painting_ignored"));
+	public static final Tag<Block> CANNOT_SUPPORT_PAINTING = TagRegistry.block(new Identifier("easy_painter:cannot_support_painting"));
+	public static final Tag<EntityType<?>> PAINTING_INTERACT = TagRegistry.entityType(new Identifier("easy_painter:painting_interact"));
+	public static final EntityType<CustomFrameEntity> CUSTOM_FRAME_ENTITY = registerEntity("frame_entity", CustomFrameEntity::new);
+    public static final PaintingItem PAINTING_ITEM_OVERRIDE = Registry.register(Registry.ITEM, Registry.ITEM.getRawId(Items.PAINTING), "painting", new PaintingItem(new FabricItemSettings().group(ItemGroup.DECORATIONS)));
+
+	public static CustomMotivesManager customMotivesManager;
 
     @Override
     public void onInitialize() {
         ServerWorldEvents.LOAD.register((server, world) -> {
             if (world.getRegistryKey() == World.OVERWORLD) {
-                CustomMotivesLoader.init(world);
+                EasyPainter.customMotivesManager = new CustomMotivesManager(world.getPersistentStateManager());
+                EasyPainter.customMotivesManager.reload(server.getResourceManager());
             }
         });
-        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> ClearCacheCommand.register(dispatcher));
     }
 
     /**
@@ -98,6 +109,15 @@ public class EasyPainter implements ModInitializer {
 
     }
 
+    public static MutableText getPaintingDisplayName(Identifier id) {
+        String translationKey = Util.createTranslationKey("painting", id);
+        if (ServerTranslations.INSTANCE.getDefaultLanguage().local().contains(translationKey)) {
+            return new TranslatableText(translationKey);
+        }
+
+        return new LiteralText(StringUtils.capitalize(id.getPath().replace("_", " ")));
+    }
+
     private static double getOffset(int i) {
         return i % 32 == 0 ? 0.5D : 0.0D;
     }
@@ -106,7 +126,7 @@ public class EasyPainter implements ModInitializer {
         return Registry.register(
                 Registry.ENTITY_TYPE,
                 "easy_painter:" + id,
-                FabricEntityTypeBuilder.create(SpawnGroup.MISC, factory).disableSaving().disableSummon().build()
+                FabricEntityTypeBuilder.create(SpawnGroup.MISC, factory).disableSaving().disableSummon().fireImmune().build()
         );
     }
 

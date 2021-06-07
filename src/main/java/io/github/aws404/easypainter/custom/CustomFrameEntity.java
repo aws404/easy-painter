@@ -24,12 +24,12 @@ import org.jetbrains.annotations.Nullable;
 public class CustomFrameEntity extends ItemFrameEntity {
 
     public PaintingEntity painting;
-    public CustomMotivesLoader.CustomMotive motive;
+    public CustomMotivesManager.CustomMotive motive;
 
     public CustomFrameEntity(World world, PaintingEntity painting, BlockPos pos, ItemStack stack) {
         super(EasyPainter.CUSTOM_FRAME_ENTITY, world, pos, painting.getHorizontalFacing());
         this.painting = painting;
-        this.motive = (CustomMotivesLoader.CustomMotive) painting.motive;
+        this.motive = (CustomMotivesManager.CustomMotive) painting.motive;
         this.setHeldItemStack(stack);
     }
 
@@ -85,7 +85,7 @@ public class CustomFrameEntity extends ItemFrameEntity {
 
     @Override
     public Packet<?> createSpawnPacket() {
-        if (this.painting.motive instanceof CustomMotivesLoader.CustomMotive) {
+        if (this.painting.motive instanceof CustomMotivesManager.CustomMotive) {
             return new EntitySpawnS2CPacket(this, EntityType.ITEM_FRAME, this.facing.getId(), this.getDecorationBlockPos());
         }
         return new EntityDestroyS2CPacket(this.getId());

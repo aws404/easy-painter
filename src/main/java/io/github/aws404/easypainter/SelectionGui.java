@@ -25,13 +25,13 @@ public class SelectionGui extends SimpleGui {
     private final PaintingEntity entity;
 
     private SelectionGui(PaintingEntity entity, List<PaintingMotive> motives, ServerPlayerEntity player) {
-        super(getHandlerFromItems(motives.size()), player, false); //TODO: Make this screen handle sizes better
+        super(SelectionGui.getHandlerFromItems(motives.size()), player, false);
         this.entity = entity;
         this.setTitle(new TranslatableText("screen.easy_painter.title"));
 
         for (PaintingMotive possibility : motives) {
             GuiElementBuilder builder = new GuiElementBuilder(Items.PAINTING)
-                    .setName(new LiteralText(StringUtils.capitalize(Registry.PAINTING_MOTIVE.getId(possibility).getPath().replace("_", " ")))
+                    .setName(EasyPainter.getPaintingDisplayName(Registry.PAINTING_MOTIVE.getId(possibility))
                             .formatted(Formatting.YELLOW)
                     )
                     .addLoreLine(new LiteralText("")
@@ -47,7 +47,7 @@ public class SelectionGui extends SimpleGui {
 
             if (possibility == entity.motive) {
                 builder.addLoreLine(new LiteralText(""));
-                builder.addLoreLine(new LiteralText("Currently Selected").formatted(Formatting.GRAY));
+                builder.addLoreLine(new TranslatableText("screen.easy_painter.currently_selected").formatted(Formatting.GRAY));
                 builder.glow();
             }
 
@@ -71,20 +71,14 @@ public class SelectionGui extends SimpleGui {
     }
 
     private static ScreenHandlerType<?> getHandlerFromItems(int count) {
-        switch ((int) Math.ceil(count / 9.0)) {
-            case 1:
-                return ScreenHandlerType.GENERIC_9X1;
-            case 2:
-                return ScreenHandlerType.GENERIC_9X2;
-            case 3:
-                return ScreenHandlerType.GENERIC_9X3;
-            case 4:
-                return ScreenHandlerType.GENERIC_9X4;
-            case 5:
-                return ScreenHandlerType.GENERIC_9X5;
-            default:
-                return ScreenHandlerType.GENERIC_9X6;
-        }
+        return switch ((int) Math.ceil(count / 9.0)) {
+            case 1 -> ScreenHandlerType.GENERIC_9X1;
+            case 2 -> ScreenHandlerType.GENERIC_9X2;
+            case 3 -> ScreenHandlerType.GENERIC_9X3;
+            case 4 -> ScreenHandlerType.GENERIC_9X4;
+            case 5 -> ScreenHandlerType.GENERIC_9X5;
+            default -> ScreenHandlerType.GENERIC_9X6;
+        };
     }
 
 }

@@ -1,12 +1,9 @@
 package io.github.aws404.easypainter.custom;
 
-import io.github.aws404.easypainter.mixin.IdCountsStateAccessor;
 import io.github.aws404.easypainter.mixin.MapStateAccessor;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.block.MapColor;
 import net.minecraft.item.map.MapState;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.IdCountsState;
+import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.World;
 
 import java.awt.*;
@@ -16,14 +13,14 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * Credit to the Image2Map Mod
+ * Credit to the Image2Map Mod for the base of this code!
  * @author TheEssem
  * @see <a href="https://github.com/TheEssem/Image2Map/blob/master/src/main/java/space/essem/image2map/renderer/MapRenderer.java">Original Source</a>
  */
 public class ImageRenderer {
     private static final double[] shadeCoeffs = {0.71, 0.86, 1.0, 0.53};
 
-    public static int renderImageToMap(BufferedImage image, ServerWorld world) {
+    public static int renderImageToMap(BufferedImage image, PersistentStateManager stateManager) {
         MapState state = MapStateAccessor.createMapState(0, 0, (byte) 3, false, false, true, World.OVERWORLD);
 
         Image resizedImage = image.getScaledInstance(128, 128, Image.SCALE_DEFAULT);
@@ -42,8 +39,8 @@ public class ImageRenderer {
             }
         }
 
-        int stateId = getNextPaintingId(world);
-        world.putMapState("map_" + stateId, state);
+        int stateId = getNextPaintingId(stateManager);
+        stateManager.set("map_" + stateId, state);
         return stateId;
     }
 
@@ -57,14 +54,8 @@ public class ImageRenderer {
         return new double[] { color[0] * coeff, color[1] * coeff, color[2] * coeff };
     }
 
-    private static int getNextPaintingId(ServerWorld world) {
-        IdCountsState idCounts = world.getPersistentStateManager().getOrCreate(IdCountsState::fromNbt, IdCountsState::new, "idcounts");
-        Object2IntMap<String> counts = ((IdCountsStateAccessor) idCounts).getIdCounts();
-
-        int i = counts.getInt("painting") + 1;
-        counts.put("painting", i);
-        idCounts.markDirty();
-        return i;
+    private static int getNextPaintingId(PersistentStateManager stateManager) {
+        return MotiveCacheState.getOrCreate(stateManager).getNextMapId();
     }
 
     private static int nearestColor(MapColor[] colors, Color imageColor) {

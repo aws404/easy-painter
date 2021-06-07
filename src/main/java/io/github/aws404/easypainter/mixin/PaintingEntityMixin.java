@@ -3,8 +3,8 @@ package io.github.aws404.easypainter.mixin;
 import io.github.aws404.easypainter.EasyPainter;
 import io.github.aws404.easypainter.SelectionGui;
 import io.github.aws404.easypainter.custom.CustomFrameEntity;
-import io.github.aws404.easypainter.custom.CustomMotivesLoader;
-import io.github.aws404.easypainter.custom.CustomPaintingState;
+import io.github.aws404.easypainter.custom.CustomMotivesManager;
+import io.github.aws404.easypainter.custom.MotiveCacheState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageSource;
@@ -84,8 +84,8 @@ public abstract class PaintingEntityMixin extends AbstractDecorationEntity {
 			this.customPaintingFrames = new CustomFrameEntity[0];
 		}
 
-		if (this.motive instanceof CustomMotivesLoader.CustomMotive && this.motive != this.cachedMotive) {
-			CustomPaintingState state = ((CustomMotivesLoader.CustomMotive) this.motive).state;
+		if (this.motive instanceof CustomMotivesManager.CustomMotive && this.motive != this.cachedMotive) {
+			MotiveCacheState.Entry state = ((CustomMotivesManager.CustomMotive) this.motive).state;
 			this.customPaintingFrames = new CustomFrameEntity[state.blockWidth * state.blockHeight];
 
 			int widthBlocks = motive.getWidth() / 16;
@@ -101,7 +101,7 @@ public abstract class PaintingEntityMixin extends AbstractDecorationEntity {
 				for (int y = 0; y < heightBlocks; y++) {
 					BlockPos pos = new BlockPos.Mutable().set(this.attachmentPos).move(rotated, x + attachX).move(Direction.UP, (heightBlocks - y) + attachY - 1);
 
-					ItemStack stack = ((CustomMotivesLoader.CustomMotive) this.motive).createMapItem(x, y);
+					ItemStack stack = ((CustomMotivesManager.CustomMotive) this.motive).createMapItem(x, y);
 
 					CustomFrameEntity entity = new CustomFrameEntity(this.world, (PaintingEntity) (Object) this, pos, stack);
 					this.world.spawnEntity(entity);
@@ -127,7 +127,7 @@ public abstract class PaintingEntityMixin extends AbstractDecorationEntity {
 
 	@Inject(method = "createSpawnPacket", at = @At("HEAD"), cancellable = true)
 	private void createSpawnPacket(CallbackInfoReturnable<Packet<?>> cir) {
-		if (this.motive instanceof CustomMotivesLoader.CustomMotive) {
+		if (this.motive instanceof CustomMotivesManager.CustomMotive) {
 			cir.setReturnValue(new EntityDestroyS2CPacket(this.getId()));
 		}
 	}
