@@ -4,7 +4,7 @@
 
 ## Features
 * Easy painting selection GUI opens when you place/shift click a painting, showing you all the paintings that could go in that position.
-* Add custom paintings to your server, no resource packs required. Just place create a simple datapack, [see here](/example).
+* Add custom paintings to your server, no resource packs required. Just create a simple datapack, [see here](/example).
 * Painting locking, add the `locked:true` tag to a painting entity to lock it. This will make it unbreakable, unchangeable, ect.
 * Painting block/entity tags, customise the blocks which can support paintings/sit informant of paintings without breaking them.
     * `easy_painter/tags/blocks/cannot_support_paiting.json` - Blocks which cannot be behind paintings without them breaking
