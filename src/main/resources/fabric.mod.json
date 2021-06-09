@@ -25,6 +25,7 @@
     "java": ">=16",
     "fabric": "*",
     "minecraft": "1.17.x",
-    "sgui": "1.0.x"
+    "sgui": "1.0.x",
+    "server_translations_api":  ">=1.4.2"
   }
 }
