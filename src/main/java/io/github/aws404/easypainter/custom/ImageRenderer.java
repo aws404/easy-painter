@@ -22,7 +22,8 @@ public class ImageRenderer {
     private static final double[] shadeCoeffs = {0.71, 0.86, 1.0, 0.53};
 
     public static int renderImageToMap(BufferedImage image, DitherMode mode, PersistentStateManager stateManager) {
-        MapState state = MapStateAccessor.createMapState(0, 0, (byte) 3, false, false, true, World.OVERWORLD);
+        MapState state = MapState.of((byte) 3, false, World.OVERWORLD);
+        ((MapStateAccessor) state).setLocked(true);
 
         Image resizedImage = image.getScaledInstance(128, 128, Image.SCALE_DEFAULT);
         BufferedImage resized = convertToBufferedImage(resizedImage);
