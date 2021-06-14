@@ -1,8 +1,6 @@
 package io.github.aws404.easypainter;
 
-import fr.catcore.server.translations.api.ServerTranslations;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.decoration.AbstractDecorationEntity;
 import net.minecraft.entity.decoration.painting.PaintingEntity;
 import net.minecraft.entity.decoration.painting.PaintingMotive;
