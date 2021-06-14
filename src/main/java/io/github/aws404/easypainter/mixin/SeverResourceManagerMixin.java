@@ -1,8 +1,6 @@
 package io.github.aws404.easypainter.mixin;
 
 import io.github.aws404.easypainter.EasyPainter;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.resource.ResourcePack;
 import net.minecraft.resource.ServerResourceManager;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.util.Unit;

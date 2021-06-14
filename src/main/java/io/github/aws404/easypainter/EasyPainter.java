@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.fabricmc.fabric.api.tag.TagRegistry;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -22,7 +23,6 @@ import net.minecraft.item.Items;
 import net.minecraft.tag.Tag;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
@@ -49,6 +49,8 @@ public class EasyPainter implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        LOGGER.info("Starting Easy Painter (Version {})", FabricLoader.getInstance().getModContainer("easy_painter").orElseThrow(() -> new IllegalStateException("initialising unloaded mod")).getMetadata().getVersion().getFriendlyString());
+
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> EasyPainterCommand.register(dispatcher));
 
         ServerWorldEvents.LOAD.register((server, world) -> {

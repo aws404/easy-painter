@@ -117,7 +117,7 @@ public abstract class PaintingEntityMixin extends AbstractDecorationEntity {
 
 	@Inject(method = "readCustomDataFromNbt", at = @At("HEAD"))
 	private void readCustomDataFromNbt(NbtCompound nbt, CallbackInfo ci) {
-		this.locked = nbt.getBoolean("locked");
+		this.locked = nbt.contains("locked") && nbt.getBoolean("locked");
 	}
 
 	@Inject(method = "writeCustomDataToNbt", at = @At("HEAD"))
