@@ -15,7 +15,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.Packet;
-import net.minecraft.network.packet.s2c.play.EntityDestroyS2CPacket;
+import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -128,7 +128,7 @@ public abstract class PaintingEntityMixin extends AbstractDecorationEntity {
 	@Inject(method = "createSpawnPacket", at = @At("HEAD"), cancellable = true)
 	private void createSpawnPacket(CallbackInfoReturnable<Packet<?>> cir) {
 		if (this.motive instanceof CustomMotivesManager.CustomMotive) {
-			cir.setReturnValue(new EntityDestroyS2CPacket(this.getId()));
+			cir.setReturnValue(new EntitiesDestroyS2CPacket(this.getId()));
 		}
 	}
 
