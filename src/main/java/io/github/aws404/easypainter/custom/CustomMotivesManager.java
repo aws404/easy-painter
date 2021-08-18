@@ -61,7 +61,7 @@ public class CustomMotivesManager {
 
         public ItemStack createMapItem(int x, int y) {
             ItemStack map = new ItemStack(Items.FILLED_MAP);
-            map.getOrCreateTag().putInt("map", state.mapIds[x][y]);
+            map.getOrCreateNbt().putInt("map", state.mapIds[x][y]);
             return map;
         }
     }

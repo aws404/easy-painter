@@ -23,11 +23,11 @@ public class EasyPainterCommand {
                     .executes(context -> {
                         EasyPainterCommand.checkPrepared();
 
-                        context.getSource().getMinecraftServer().save(false, true, true);
-                        context.getSource().getMinecraftServer().getPlayerManager().saveAllPlayerData();
-                        context.getSource().getMinecraftServer().stop(false);
+                        context.getSource().getServer().save(false, true, true);
+                        context.getSource().getServer().getPlayerManager().saveAllPlayerData();
+                        context.getSource().getServer().stop(false);
 
-                        PersistentStateManager manager = context.getSource().getMinecraftServer().getOverworld().getPersistentStateManager();
+                        PersistentStateManager manager = context.getSource().getServer().getOverworld().getPersistentStateManager();
                         MotiveCacheState cache = MotiveCacheState.getOrCreate(manager);
 
                         for (Identifier key : cache.getKeys()) {

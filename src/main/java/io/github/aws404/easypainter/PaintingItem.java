@@ -29,8 +29,8 @@ public class PaintingItem extends DecorationItem {
     @Override
     public Text getName(ItemStack stack) {
         MutableText text = (MutableText) super.getName(stack);
-        if (stack.getTag() != null && stack.getTag().contains("EntityTag")) {
-            Identifier current = Identifier.tryParse(stack.getOrCreateSubTag("EntityTag").getString("Motive"));
+        if (stack.getNbt() != null && stack.getNbt().contains("EntityTag")) {
+            Identifier current = Identifier.tryParse(stack.getOrCreateSubNbt("EntityTag").getString("Motive"));
             text.append(new TranslatableText("item.easy_painter.painting.set", EasyPainter.getPaintingDisplayName(current).formatted(Formatting.ITALIC)));
         }
         return text.setStyle(text.getStyle().withItalic(text.getStyle().isItalic()));
@@ -40,9 +40,9 @@ public class PaintingItem extends DecorationItem {
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         ItemStack stack = user.getStackInHand(hand);
         if (user.isSneaking()) {
-            stack.getOrCreateTag().remove("EntityTag");
-        } else if (stack.getTag() != null && stack.getTag().contains("EntityTag")) {
-            NbtCompound entityTag = stack.getOrCreateSubTag("EntityTag");
+            stack.getOrCreateNbt().remove("EntityTag");
+        } else if (stack.getNbt() != null && stack.getNbt().contains("EntityTag")) {
+            NbtCompound entityTag = stack.getOrCreateSubNbt("EntityTag");
             Identifier current = Identifier.tryParse(entityTag.getString("Motive"));
             int newRaw = Registry.PAINTING_MOTIVE.getRawId(Registry.PAINTING_MOTIVE.get(current)) + 1;
             if (newRaw >= Registry.PAINTING_MOTIVE.getIds().size()) {
@@ -51,7 +51,7 @@ public class PaintingItem extends DecorationItem {
 
             entityTag.putString("Motive", Registry.PAINTING_MOTIVE.getId(Registry.PAINTING_MOTIVE.get(newRaw)).toString());
         } else {
-            NbtCompound entityTag = stack.getOrCreateSubTag("EntityTag");
+            NbtCompound entityTag = stack.getOrCreateSubNbt("EntityTag");
             entityTag.putString("Motive", Registry.PAINTING_MOTIVE.getId(PaintingMotive.ALBAN).toString());
         }
 
@@ -75,7 +75,7 @@ public class PaintingItem extends DecorationItem {
             World world = context.getWorld();
             PaintingEntity paintingEntity = new PaintingEntity(world, blockPos2, direction);
 
-            NbtCompound nbtCompound = itemStack.getTag();
+            NbtCompound nbtCompound = itemStack.getNbt();
             if (nbtCompound != null) {
                 EntityType.loadFromEntityNbt(world, playerEntity, paintingEntity, nbtCompound);
             } else {

@@ -10,7 +10,7 @@ import net.minecraft.entity.decoration.painting.PaintingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
-import net.minecraft.network.packet.s2c.play.EntityDestroyS2CPacket;
+import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -88,7 +88,7 @@ public class CustomFrameEntity extends ItemFrameEntity {
         if (this.painting.motive instanceof CustomMotivesManager.CustomMotive) {
             return new EntitySpawnS2CPacket(this, EntityType.ITEM_FRAME, this.facing.getId(), this.getDecorationBlockPos());
         }
-        return new EntityDestroyS2CPacket(this.getId());
+        return new EntitiesDestroyS2CPacket(this.getId());
     }
 
     @Override

@@ -7,7 +7,7 @@ import net.minecraft.entity.decoration.painting.PaintingEntity;
 import net.minecraft.entity.decoration.painting.PaintingMotive;
 import net.minecraft.item.Items;
 import net.minecraft.network.Packet;
-import net.minecraft.network.packet.s2c.play.EntityDestroyS2CPacket;
+import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
@@ -57,7 +57,7 @@ public class SelectionGui extends SimpleGui {
     private void changePainting(PaintingMotive motive) {
         this.entity.motive = motive;
         ((AbstractDecorationEntityAccessor) this.entity).callUpdateAttachmentPosition();
-        this.entity.getServer().getPlayerManager().sendToAll(new EntityDestroyS2CPacket(this.entity.getId()));
+        this.entity.getServer().getPlayerManager().sendToAll(new EntitiesDestroyS2CPacket(this.entity.getId()));
         Packet<?> packet = this.entity.createSpawnPacket();
         if (packet != null) {
             this.entity.getServer().getPlayerManager().sendToAll(packet);
